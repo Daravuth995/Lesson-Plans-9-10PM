@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Conversation Practice — Teacher Mode</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-2: #0ea5e9;
+    --speaker-customer: #10b981;
+    --speaker-worker: #8b5cf6;
+    --vocab-card: #334155;
+    --maxw: 1200px;
+    --fs: 20px;
+    --border-radius: 12px;
+    --transition: all 0.25s ease;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    padding: 20px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  }
+
+  .container {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Header Image */
+  .header-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .header-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .header-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent);
+    padding: 20px;
+  }
+
+  .header-overlay h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+  }
+
+  .header-overlay .subtitle {
+    color: #cbd5e1;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+
+  /* Teacher Controls Bar */
+  .teacher-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(30, 41, 59, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .control-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .presenter-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .presenter-status .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  button {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  button:hover {
+    background: rgba(59, 130, 246, 0.25);
+    transform: translateY(-2px);
+  }
+
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  button.primary:hover {
+    background: #2563eb;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  }
+
+  button.secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .font-controls {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  /* Main Content - Vocabulary at Top */
+  .main-content {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  /* Vocabulary Section - Now at Top */
+  .vocabulary-section {
+    background: rgba(30, 41, 59, 0.7);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title i {
+    color: var(--accent);
+  }
+
+  .vocabulary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+  }
+
+  @media (max-width: 1024px) {
+    .vocabulary-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .vocabulary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .vocab-card {
+    background: var(--vocab-card);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vocab-card:hover {
+    background: rgba(59, 130, 246, 0.15);
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  .vocab-card.active {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .vocab-word {
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+
+  .vocab-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .vocab-pos {
+    font-style: italic;
+  }
+
+  /* Conversation Section - Simplified */
+  .conversation-section {
+    background: rgba(30, 41, 59, 0.7);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .conv {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
+  .conv::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .conv::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  .conv::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+  }
+
+  .line {
+    padding: 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: var(--transition);
+    position: relative;
+  }
+
+  .line:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .line.presenter-active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .line-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .speaker-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .speaker-customer {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+
+  .speaker-worker {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+  }
+
+  .line-number {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .text {
+    font-size: var(--fs);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .ipa {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-size: calc(var(--fs) * 0.75);
+    color: #cbd5e1;
+    font-family: 'Segoe UI', 'Roboto', monospace;
+    border-left: 3px solid var(--accent);
+    display: none;
+  }
+
+  .ipa.show {
+    display: block;
+  }
+
+  .vocab-highlight {
+    background: rgba(59, 130, 246, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border-bottom: 2px solid var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .vocab-highlight:hover {
+    background: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Progress and Navigation */
+  .progress-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .progress-container {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-right: 20px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  .nav-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .nav-btn {
+    padding: 12px 20px;
+    min-width: 120px;
+  }
+
+  .nav-btn i {
+    font-size: 18px;
+  }
+
+  /* Help Text */
+  .help-text {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .help-text kbd {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    margin: 0 5px;
+  }
+
+  /* Presenter Mode Full Screen */
+  body.presenter-mode {
+    padding: 0;
+  }
+
+  body.presenter-mode .container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  body.presenter-mode .conv {
+    max-height: calc(100vh - 400px);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    body {
+      padding: 10px;
+    }
+    
+    .teacher-controls {
+      flex-direction: column;
+      gap: 15px;
+      align-items: flex-start;
+    }
+    
+    .control-group {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .nav-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .nav-btn {
+      flex: 1;
+      justify-content: center;
+    }
+    
+    :root {
+      --fs: 18px;
+    }
+  }
+
+  /* Simple animation for line transitions */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .line {
+    animation: fadeIn 0.3s ease;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header with Image -->
+    <div class="header-image">
+      <img src="https://raw.githubusercontent.com/Daravuth995/Problem-Solving-Role-Play/refs/heads/main/C413A993-F06B-401E-BFCE-4EAF13A34F4B.png" alt="Customer Service Role Play">
+      <div class="header-overlay">
+        <h1><i class="fas fa-comments"></i> Customer Service Conversation Practice</h1>
+        <div class="subtitle">Role-play with pronunciation guide • Teacher Mode</div>
+      </div>
+    </div>
+
+    <!-- Teacher Controls -->
+    <div class="teacher-controls">
+      <div class="control-group">
+        <button id="toggle-ipa" class="secondary">
+          <i class="fas fa-language"></i> Toggle IPA
+        </button>
+        <button id="presenter" class="primary">
+          <i class="fas fa-expand"></i> Presenter Mode
+        </button>
+        <div class="font-controls">
+          <button id="font-decrease" class="secondary" title="Smaller Text">
+            <i class="fas fa-minus"></i>
+          </button>
+          <button id="font-reset" class="secondary" title="Reset Text Size">
+            <i class="fas fa-text-height"></i>
+          </button>
+          <button id="font-increase" class="secondary" title="Larger Text">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="presenter-status">
+        <div class="indicator"></div>
+        <span>Teacher Mode Active</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Vocabulary Section at the TOP -->
+      <section class="vocabulary-section">
+        <div class="section-title">
+          <i class="fas fa-star"></i> Key Vocabulary Words
+        </div>
+        <div class="vocabulary-grid" id="vocabulary-grid">
+          <!-- Vocabulary cards will be inserted here -->
+        </div>
+      </section>
+
+      <!-- Conversation Section -->
+      <section class="conversation-section">
+        <div class="section-title">
+          <i class="fas fa-exchange-alt"></i> Conversation Practice
+        </div>
+        
+        <div class="conv" id="conv">
+          <!-- Conversation lines will be inserted here -->
+        </div>
+
+        <!-- Progress and Navigation -->
+        <div class="progress-nav">
+          <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          
+          <div class="nav-controls">
+            <button id="prev-line" class="nav-btn secondary">
+              <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button id="next-line" class="nav-btn primary">
+              Next <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Help Text -->
+    <div class="help-text">
+      <i class="fas fa-info-circle"></i> 
+      Teacher Controls: 
+      <kbd>←</kbd> Previous Line • 
+      <kbd>→</kbd> Next Line • 
+      <kbd>Space</kbd> Show/Hide IPA • 
+      <kbd>V</kbd> Highlight Vocabulary
+    </div>
+  </div>
+
+<script>
+  // Complete application with teacher-focused features
+  (function(){
+    // State management
+    const state = {
+      ipaVisible: false,
+      presenterMode: false,
+      currentLine: 0,
+      fontSize: 20,
+      activeVocab: null
+    };
+
+    // DOM Elements
+    const elements = {
+      container: document.querySelector('.container'),
+      vocabularyGrid: document.getElementById('vocabulary-grid'),
+      convContainer: document.getElementById('conv'),
+      progressBar: document.getElementById('progress-bar'),
+      toggleIpa: document.getElementById('toggle-ipa'),
+      presenterBtn: document.getElementById('presenter'),
+      prevLineBtn: document.getElementById('prev-line'),
+      nextLineBtn: document.getElementById('next-line'),
+      fontDecrease: document.getElementById('font-decrease'),
+      fontIncrease: document.getElementById('font-increase'),
+      fontReset: document.getElementById('font-reset')
+    };
+
+    // Vocabulary data
+    const vocabulary = [
+      { word: "logistical", pos: "adjective", ipa: "/ˌlɒdʒ.ɪˈstɪk.əl/", definition: "relating to organization of complex operations" },
+      { word: "inconvenience", pos: "noun", ipa: "/ˌɪn.kənˈviː.ni.əns/", definition: "trouble or difficulty" },
+      { word: "priority", pos: "noun", ipa: "/praɪˈɒr.ɪ.ti/", definition: "something treated as most important" },
+      { word: "address", pos: "verb", ipa: "/əˈdres/", definition: "to deal with a problem" },
+      { word: "arrange", pos: "verb", ipa: "/əˈreɪndʒ/", definition: "to organize or plan" },
+      { word: "review", pos: "verb", ipa: "/rɪˈvjuː/", definition: "to examine formally" },
+      { word: "update", pos: "verb", ipa: "/ˈʌp.deɪt/", definition: "to make current" },
+      { word: "appreciate", pos: "verb", ipa: "/əˈpriː.ʃi.eɪt/", definition: "to recognize worth" },
+      { word: "prompt", pos: "adjective", ipa: "/prɒmpt/", definition: "done without delay" },
+      { word: "resolve", pos: "verb", ipa: "/rɪˈzɒlv/", definition: "to find a solution" }
+    ];
+
+    // Conversation data
+    const conversation = [
+      {
+        speaker: "customer",
+        text: "Hello, I'm calling regarding my recent order. It was scheduled to arrive yesterday, but I haven't received it yet.",
+        ipa: "/həˈləʊ, aɪm ˈkɔːlɪŋ rɪˈɡɑːdɪŋ maɪ ˈriːsnt ˈɔːdə. ɪt wəz ˈʃedjuːld tə əˈraɪv ˈjestədeɪ, bət aɪ ˈhævnt rɪˈsiːvd ɪt jet/"
+      },
+      {
+        speaker: "customer",
+        text: "I've been waiting the whole afternoon, so I just want to know what's going on.",
+        ipa: "/aɪv bɪn ˈweɪtɪŋ ðə həʊl ˌɑːftəˈnuːn, səʊ aɪ dʒʌst wɒnt tə nəʊ wɒts ˌɡəʊɪŋ ˈɒn/"
+      },
+      {
+        speaker: "worker",
+        text: "I understand. Thank you for bringing this to our attention. Could you please provide me with your order number so I can check the details?",
+        ipa: "/aɪ ˌʌndəˈstænd. θæŋk juː fə ˈbrɪŋɪŋ ðɪs tʊ ˌaʊər əˈtenʃn. kəd juː pliːz prəˈvaɪd miː wɪð jɔː ˈɔːdə ˈnʌmbə səʊ aɪ kən tʃek ðə ˈdiːteɪlz/"
+      },
+      {
+        speaker: "worker",
+        text: "Once I have the number, I can look into the delivery history for you.",
+        ipa: "/wʌns aɪ hæv ðə ˈnʌmbə, aɪ kən lʊk ˈɪntə ðə dɪˈlɪvəri ˈhɪstəri fə juː/"
+      },
+      {
+        speaker: "customer",
+        text: "Certainly. It's 54321.",
+        ipa: "/ˈsɜːtnli. ɪts ˌfaɪv fɔː θriː tuː wʌn/"
+      },
+      {
+        speaker: "customer",
+        text: "I hope this can be checked quickly because I'm quite concerned.",
+        ipa: "/aɪ həʊp ðɪs kən biː tʃekt ˈkwɪkli bɪˈkɒz aɪm kwaɪt kənˈsɜːnd/"
+      },
+      {
+        speaker: "worker",
+        text: "Thank you. After reviewing the order, it seems that the delivery was delayed due to unforeseen traffic and logistical issues. I sincerely apologize for any inconvenience this may have caused.",
+        ipa: "/θæŋk juː. ˈɑːftə rɪˈvjuːɪŋ ði ˈɔːdə, ɪt siːmz ðət ðə dɪˈlɪvəri wəz dɪˈleɪd djuː tə ˌʌnfɔːˈsiːn ˈtræfɪk ənd ləˈdʒɪstɪkl ˈɪʃuːz. aɪ sɪnˈsɪəli əˈpɒlədʒaɪz fər ˈeni ˌɪnkənˈviːniəns ðɪs meɪ hæv kɔːzd/"
+      },
+      {
+        speaker: "worker",
+        text: "We didn't expect the route to be affected, so the team is working to sort things out.",
+        ipa: "/wi ˈdɪdnt ɪkˈspekt ðə ruːt tə bi əˈfektɪd, səʊ ðə tiːm ɪz ˈwɜːkɪŋ tə sɔːt θɪŋz aʊt/"
+      },
+      {
+        speaker: "customer",
+        text: "That's really disappointing. I needed it yesterday for an important meeting.",
+        ipa: "/ðæts ˈrɪəli ˌdɪsəˈpɔɪntɪŋ. aɪ ˈniːdɪd ɪt ˈjestədeɪ fər ən ɪmˈpɔːtənt ˈmiːtɪŋ/"
+      },
+      {
+        speaker: "customer",
+        text: "Now everything is pushed back because of this.",
+        ipa: "/naʊ ˈevriθɪŋ ɪz pʊʃt bæk bɪˈkɒz əv ðɪs/"
+      },
+      {
+        speaker: "worker",
+        text: "I completely understand, and I apologize again for the delay. To resolve this promptly, we can arrange a priority delivery for tomorrow morning. Will that be acceptable?",
+        ipa: "/aɪ kəmˈpliːtli ˌʌndəˈstænd, ənd aɪ əˈpɒlədʒaɪz əˈɡen fə ðə dɪˈleɪ. tə rɪˈzɒlv ðɪs ˈprɒmptli, wi kən əˈreɪndʒ ə praɪˈɒrəti dɪˈlɪvəri fə təˈmɒrəʊ ˈmɔːnɪŋ. wɪl ðæt bi əkˈseptəbl/"
+      },
+      {
+        speaker: "worker",
+        text: "We want to make sure you receive it as fast as possible.",
+        ipa: "/wi wɒnt tə meɪk ʃɔː ju rɪˈsiːv ɪt əz fɑːst əz ˈpɒsəbl/"
+      },
+      {
+        speaker: "customer",
+        text: "Yes, that would work. Thank you for addressing this.",
+        ipa: "/jes, ðæt wəd wɜːk. θæŋk juː fər əˈdresɪŋ ðɪs/"
+      },
+      {
+        speaker: "customer",
+        text: "I just hope there won't be any more delays.",
+        ipa: "/aɪ dʒʌst həʊp ðeə wəʊnt bi ˈeni mɔː dɪˈleɪz/"
+      },
+      {
+        speaker: "worker",
+        text: "You're welcome. I've updated your order, and it should arrive by 10 AM tomorrow. We appreciate your patience and understanding.",
+        ipa: "/jɔː ˈwelkəm. aɪv ˈʌpdeɪtɪd jɔː ˈɔːdə, ənd ɪt ʃəd əˈraɪv baɪ ten eɪˈem təˈmɒrəʊ. wi əˈpriːʃieɪt jɔː ˈpeɪʃns ənd ˌʌndəˈstændɪŋ/"
+      },
+      {
+        speaker: "worker",
+        text: "If there are any changes, we will notify you right away.",
+        ipa: "/ɪf ðeər ər ˈeni ˈtʃeɪndʒɪz, wi wɪl ˈnəʊtɪfaɪ juː raɪt əˈweɪ/"
+      },
+      {
+        speaker: "customer",
+        text: "Thank you for your support. I'll wait for the delivery tomorrow then.",
+        ipa: "/θæŋk juː fə jɔː səˈpɔːt. aɪl weɪt fə ðə dɪˈlɪvəri təˈmɒrəʊ ðen/"
+      },
+      {
+        speaker: "worker",
+        text: "My pleasure. If there's anything else we can assist you with, please don't hesitate to contact us. Have a good day. We're here anytime if you need help with future orders.",
+        ipa: "/maɪ ˈpleʒə. ɪf ðeəz ˈeniθɪŋ els wi kən əˈsɪst juː wɪð, pliːz dəʊnt ˈhezɪteɪt tə ˈkɒntækt ʌs. hæv ə ɡʊd deɪ. wɪə hɪər ˈeniˌtaɪm ɪf ju niːd help wɪð ˈfjuːtʃə ˈɔːdəz/"
+      }
+    ];
+
+    // Initialize the application
+    function init() {
+      renderVocabulary();
+      renderConversation();
+      updateProgress();
+      setupEventListeners();
+      
+      // Auto-enter presenter mode for teacher convenience
+      setTimeout(() => {
+        togglePresenterMode();
+      }, 500);
+    }
+
+    // Render vocabulary cards
+    function renderVocabulary() {
+      elements.vocabularyGrid.innerHTML = '';
+      
+      vocabulary.forEach((vocab, index) => {
+        const card = document.createElement('div');
+        card.className = 'vocab-card';
+        card.dataset.index = index;
+        
+        card.innerHTML = `
+          <div class="vocab-word">${vocab.word}</div>
+          <div class="vocab-details">
+            <span class="vocab-pos">${vocab.pos}</span>
+            <span class="vocab-ipa">${vocab.ipa}</span>
+          </div>
+        `;
+        
+        card.addEventListener('click', () => {
+          highlightVocabulary(vocab.word);
+          speakWord(vocab.word);
+        });
+        
+        elements.vocabularyGrid.appendChild(card);
+      });
+    }
+
+    // Render conversation lines
+    function renderConversation() {
+      elements.convContainer.innerHTML = '';
+      
+      conversation.forEach((line, index) => {
+        // Highlight vocabulary words in text
+        let highlightedText = line.text;
+        vocabulary.forEach(vocab => {
+          const regex = new RegExp(`\\b(${vocab.word})\\b`, 'gi');
+          highlightedText = highlightedText.replace(regex, 
+            `<span class="vocab-highlight" data-word="${vocab.word}">$1</span>`);
+        });
+        
+        const lineElement = document.createElement('div');
+        lineElement.className = 'line';
+        lineElement.dataset.index = index;
+        
+        lineElement.innerHTML = `
+          <div class="line-header">
+            <div class="speaker-badge ${line.speaker === 'customer' ? 'speaker-customer' : 'speaker-worker'}">
+              <i class="fas fa-${line.speaker === 'customer' ? 'user' : 'headset'}"></i>
+              ${line.speaker === 'customer' ? 'Customer' : 'Worker'}
+            </div>
+            <div class="line-number">Line ${index + 1}</div>
+          </div>
+          <div class="text">${highlightedText}</div>
+          <div class="ipa">${line.ipa}</div>
+        `;
+        
+        // Add click handlers for vocabulary highlights
+        lineElement.querySelectorAll('.vocab-highlight').forEach(highlight => {
+          highlight.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const word = highlight.dataset.word;
+            highlightVocabulary(word);
+            speakWord(word);
+          });
+        });
+        
+        elements.convContainer.appendChild(lineElement);
+      });
+      
+      // Update active line
+      updateActiveLine();
+    }
+
+    // Highlight vocabulary word
+    function highlightVocabulary(word) {
+      // Remove active class from all vocab cards
+      document.querySelectorAll('.vocab-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      
+      // Add active class to matching card
+      const matchingCard = document.querySelector(`.vocab-card .vocab-word:contains("${word}")`)?.closest('.vocab-card');
+      if (matchingCard) {
+        matchingCard.classList.add('active');
+        matchingCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      
+      // Highlight in text
+      document.querySelectorAll('.vocab-highlight').forEach(highlight => {
+        highlight.style.backgroundColor = '';
+        if (highlight.textContent.toLowerCase() === word.toLowerCase()) {
+          highlight.style.backgroundColor = 'rgba(59, 130, 246, 0.3)';
+          highlight.style.fontWeight = 'bold';
+          
+          // Scroll to the first occurrence
+          if (!state.presenterMode) {
+            highlight.closest('.line').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
+      
+      state.activeVocab = word;
+    }
+
+    // Text-to-speech for vocabulary
+    function speakWord(word) {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Toggle IPA visibility
+    function toggleIpa() {
+      state.ipaVisible = !state.ipaVisible;
+      elements.toggleIpa.innerHTML = state.ipaVisible ? 
+        '<i class="fas fa-language"></i> Hide IPA' : 
+        '<i class="fas fa-language"></i> Show IPA';
+      
+      document.querySelectorAll('.ipa').forEach(ipa => {
+        ipa.classList.toggle('show', state.ipaVisible);
+      });
+    }
+
+    // Toggle presenter mode
+    function togglePresenterMode() {
+      state.presenterMode = !state.presenterMode;
+      
+      if (state.presenterMode) {
+        document.body.classList.add('presenter-mode');
+        elements.presenterBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Presenter';
+        elements.presenterBtn.classList.add('primary');
+        
+        // Auto-scroll to current line
+        updateActiveLine();
+      } else {
+        document.body.classList.remove('presenter-mode');
+        elements.presenterBtn.innerHTML = '<i class="fas fa-expand"></i> Presenter Mode';
+        elements.presenterBtn.classList.remove('primary');
+        
+        // Remove presenter highlighting
+        document.querySelectorAll('.line').forEach(line => {
+          line.classList.remove('presenter-active');
+        });
+      }
+    }
+
+    // Navigate to previous line
+    function prevLine() {
+      if (state.currentLine > 0) {
+        state.currentLine--;
+        updateActiveLine();
+      }
+    }
+
+    // Navigate to next line
+    function nextLine() {
+      if (state.currentLine < conversation.length - 1) {
+        state.currentLine++;
+        updateActiveLine();
+      }
+    }
+
+    // Update active line highlighting
+    function updateActiveLine() {
+      // Remove active class from all lines
+      document.querySelectorAll('.line').forEach(line => {
+        line.classList.remove('presenter-active');
+      });
+      
+      // Add active class to current line
+      const currentLineElement = document.querySelector(`.line[data-index="${state.currentLine}"]`);
+      if (currentLineElement) {
+        currentLineElement.classList.add('presenter-active');
+        
+        // Auto-scroll in presenter mode
+        if (state.presenterMode) {
+          currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      // Update progress
+      updateProgress();
+    }
+
+    // Update progress bar
+    function updateProgress() {
+      const progress = (state.currentLine + 1) / conversation.length * 100;
+      elements.progressBar.style.width = `${progress}%`;
+    }
+
+    // Adjust font size
+    function adjustFontSize(delta) {
+      state.fontSize = Math.max(16, Math.min(30, state.fontSize + delta));
+      document.documentElement.style.setProperty('--fs', `${state.fontSize}px`);
+    }
+
+    // Reset font size
+    function resetFontSize() {
+      state.fontSize = 20;
+      document.documentElement.style.setProperty('--fs', `${state.fontSize}px`);
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Button events
+      elements.toggleIpa.addEventListener('click', toggleIpa);
+      elements.presenterBtn.addEventListener('click', togglePresenterMode);
+      elements.prevLineBtn.addEventListener('click', prevLine);
+      elements.nextLineBtn.addEventListener('click', nextLine);
+      elements.fontDecrease.addEventListener('click', () => adjustFontSize(-2));
+      elements.fontIncrease.addEventListener('click', () => adjustFontSize(2));
+      elements.fontReset.addEventListener('click', resetFontSize);
+      
+      // Keyboard shortcuts for teacher
+      document.addEventListener('keydown', (e) => {
+        // Prevent default for space key
+        if (e.code === 'Space' && e.target === document.body) {
+          e.preventDefault();
+        }
+        
+        switch(e.code) {
+          case 'ArrowLeft':
+            prevLine();
+            break;
+          case 'ArrowRight':
+            nextLine();
+            break;
+          case 'Space':
+            toggleIpa();
+            break;
+          case 'KeyV':
+            // Highlight random vocabulary
+            const randomVocab = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            highlightVocabulary(randomVocab.word);
+            break;
+          case 'KeyP':
+            // Toggle presenter mode
+            togglePresenterMode();
+            break;
+        }
+      });
+      
+      // Click on conversation line to jump to it
+      elements.convContainer.addEventListener('click', (e) => {
+        const lineElement = e.target.closest('.line');
+        if (lineElement && !e.target.closest('.vocab-highlight')) {
+          state.currentLine = parseInt(lineElement.dataset.index);
+          updateActiveLine();
+        }
+      });
+    }
+
+    // Start the application
+    init();
+  })();
+</script>
+</body>
+</html>
